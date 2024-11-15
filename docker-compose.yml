@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5444:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - keycloak-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
+    environment:
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?useSSL=false
+      KC_DB: postgres
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+    ports:
+      - "8089:8080"
+    command: ["start-dev"]
+    networks:
+      - keycloak-network
+
+
+networks:
+  keycloak-network:
+
+volumes:
+  db_data:
